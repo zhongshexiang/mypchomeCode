@@ -1,0 +1,62 @@
+﻿@{
+    Layout = null;
+    ViewBag.EasyuiVersion = "1.4.5";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <!--打包脚本-->
+    @Scripts.Render("~/Content/js/home")
+
+    <script src="~/Content/js/jquery-easyui-1.4.5/jquery.easyui.min.js"></script>
+    <script src="~/Content/js/jquery-easyui-1.4.5/locale/easyui-lang-zh_CN.js"></script>
+    <script src="~/Content/js/core/jquery.easyui.fix.js"></script>
+    <script src="~/Content/js/core/knockout-2.2.1.js"></script>
+
+    <!--基础样式，首先加载-->
+    <link href="~/Content/css/base.css" rel="stylesheet" />
+
+    <!--加载960CSS框架-->
+    <link href="~/Content/css/960/fluid/reset.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/css/960/fluid/text.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/css/960/fluid/grid.css" rel="stylesheet" type="text/css" />
+
+    <!--样式-->
+    <link href="~/Content/js/jquery-easyui-1.4.5/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/js/jquery-plugin/showloading/showLoading.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/js/jquery-plugin/jnotify/jquery.jnotify.css" rel="stylesheet" />
+    <link href="~/Content/js/jquery-plugin/jqgrid/default/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+    <!--加载样式修正CSS-->
+    <link href="~/Content/css/hack/fix.css" rel="stylesheet" type="text/css" />
+
+    <!--本页面样式-->
+    <link href="~/Content/css/page/index.css" rel="stylesheet" />
+    <link href="~/Content/css/icon/icon.css" rel="stylesheet" />
+</head>
+
+
+<body class="easyui-layout">
+    <noscript>
+        <div class="noscript">
+            <img src="~/Content/images/noscript.gif" alt="抱歉，请开启脚本支持！" />
+        </div>
+    </noscript>
+    @*    加载部分试图*@
+    @Html.Partial("MasterPartial")
+    <div id="closeMenu" class="easyui-menu hide" style="width: 150px;">
+        <div id="refresh">刷新</div>
+        <div class="menu-sep"></div>
+        <div id="close">关闭</div>
+        <div id="closeall">全部关闭</div>
+        <div id="closeother">除此之外全部关闭</div>
+        <div class="menu-sep"></div>
+        <div id="closeright">关闭右侧标签</div>
+        <div id="closeleft">关闭左侧标签</div>
+        <div class="menu-sep"></div>
+        <div id="exit">退出</div>
+    </div>
+    <div id="w"></div>
+    <div id="notity"></div>
+</body>
+</html>

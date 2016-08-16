@@ -1,0 +1,27 @@
+<html>
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+	 <script src="http://apps.bdimg.com/libs/jquery/1.6.4/jquery.min.js"></script>
+</head>
+	<body>
+		<div id="n1">
+	<p id="n2">Hello</p>
+	<p id="n3">
+		CodePlayer
+		<span id="n4">专注于编程开发技术分享</span>
+		<span id="n5"></span>
+	</p>
+</div>
+	</body>   
+	<script type="text/javascript">  
+	$(function () {
+		var $n2 = $("#n2");
+		alert( $n2.html() ); // Hello
+		// 设置n2的html内容
+		$n2.html( '<strong>Hello World</strong>' );
+		alert( $n2.html() ); // Hello
+    });
+
+	</script>
+</html>

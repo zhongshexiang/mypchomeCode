@@ -1,0 +1,518 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using TransportPermits.Entity;
+using TransportPermits.Web.Models;
+using TransportPermits.BLL;
+using System.Web.Routing;
+using TransportPermits.Utilities;
+using System.IO;
+using System.Text;
+using System.Runtime.Remoting.Contexts;
+using System.Data;
+using System.Drawing;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.SS.Util;
+
+namespace TransportPermits.Web.Controllers
+{
+    public class LoginController : Controller
+    {
+        // RequestContext context;
+        protected override void Initialize(RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+             //不需要验证登录的Action
+            List<string> notCheckLoginActions = new List<string> {"GetCheckCode","EducationRegformDetail", "EducationCertificateDetail" };
+            if (!notCheckLoginActions.Contains(RouteData.Values["action"].ToString()) && SysUserIdentity == null)
+            {
+                Response.Write("<script type='text/javascript' type='language'>alert('您已登录超时,请重新登录系统,谢谢!');window.top.location.href=\"/Account/LogOn\";</script>");
+                Response.End();
+            }
+        }
+        /// <summary>
+        /// 根据控制器以及方法判断是否有权限
+        /// </summary>
+        /// <param name="controller">控制器</param>
+        /// <param name="action">方法</param>
+        /// <returns></returns>
+        protected bool SysUserPermission(string controller, string action)
+        {
+            if (SysUserIdentity.UserInfo.User_Type == 3) return true;//管理员直接return
+            int pscount = SysUserIdentity.PermissionList.Where(o => o.Fun_Action.ToLower() == action.ToLower() && o.Fun_Controller.ToLower() == controller.ToLower()).Count();
+            if (pscount > 0)
+            {
+                return true;
+            }
+            Response.Redirect("/UnPerssion/UnPerssion");
+            return false;
+        }
+        /// <summary>
+        /// 根据控制器以及方法判断是否有权限
+        /// </summary>
+        /// <param name="controller">控制器</param>
+        /// <param name="action">方法</param>
+        /// <param name="btn">按钮类型</param>
+        /// <param name="type">请求类型</param>
+        /// <returns></returns>
+        protected bool SysUserPermission(string controller, string action, Button btn, DataType type)
+        {
+            if (SysUserIdentity.UserInfo.User_Type == 3) return true;//管理员直接return
+            IEnumerable<V_UserPermission> up = SysUserIdentity.PermissionList.Where(o => o.Fun_Action.ToLower() == action.ToLower() && o.Fun_Controller.ToLower() == controller.ToLower() && o.Fun_Code == ((int)btn).ToString());
+            if (btn != Button.NoBtn)
+            {
+                up.Where(o => o.Fun_Code == ((int)btn).ToString());
+            }
+            if (up.Count() > 0) { return true; }
+            if (type == DataType.ActionResult) { Response.Redirect("/UnPerssion/UnPerssion"); } else { return false; }
+            return false;
+        }
+
+
+        /// <summary>
+        /// 根据控制器以及方法判断是否有权限
+        /// </summary>
+        /// <param name="controller">控制器</param>
+        /// <param name="action">方法</param>
+        /// <param name="btn">按钮类型</param>
+        /// <param name="type">请求类型</param>
+        /// <param name="schoolId">培训机构Id</param>
+        /// <returns></returns>
+        protected bool SysUserPermission(string controller, string action, Button btn, DataType type, string schoolId)
+        {
+            if (SysUserIdentity.UserInfo.User_Type == 3) return true;//管理员直接return
+            IEnumerable<V_UserPermission> up = SysUserIdentity.PermissionList.Where(o => o.Fun_Action.ToLower() == action.ToLower() && o.Fun_Controller.ToLower() == controller.ToLower() && o.Fun_Code == ((int)btn).ToString());
+            if (btn != Button.NoBtn)
+            {
+                up.Where(o => o.Fun_Code == ((int)btn).ToString());
+            }
+            if (up.Count() > 0 && SysUserIdentity.User_SchoolId.Split(',').Contains(schoolId)) { return true; }
+            if (type == DataType.ActionResult) { Response.Redirect("/UnPerssion/UnPerssion"); } else { return false; }
+            return false;
+        }
+
+
+        #region 属性
+
+        public static string Log_IP
+        {
+            get
+            {
+                return System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"].ToString();
+            }
+        }
+
+
+        public string RenderRazorViewToString(string viewName, object model)
+        {
+            ViewData.Model = model;
+            using (var sw = new StringWriter())
+            {
+                var viewResult = ViewEngines.Engines.FindPartialView(ControllerContext, viewName);
+                var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw);
+                viewResult.View.Render(viewContext, sw);
+                return sw.GetStringBuilder().ToString();
+            }
+        }
+        #endregion
+
+        #region  导出
+        /// <summary>
+        /// 导出
+        /// </summary>
+        /// <param name="table">数据表</param>
+        /// <param name="SheetName">工作簿名称</param>
+        /// <param name="reportName">报表名称</param>
+        public virtual void Output(DataTable table, string SheetName, string reportName)
+        {
+            string result = string.Empty;
+            try
+            {
+                HSSFWorkbook workBook = new HSSFWorkbook();
+                Sheet sheet = workBook.CreateSheet(SheetName);  //sheet页名称
+                NPOI.SS.UserModel.Font font = workBook.CreateFont();
+                font.FontName = "微软雅黑";
+
+                font.FontHeight = 175;
+                CellStyle style = workBook.CreateCellStyle();
+                style.Alignment = HorizontalAlignment.CENTER;
+                style.VerticalAlignment = VerticalAlignment.CENTER;
+                style.SetFont(font);
+                style.WrapText = true;
+
+                Row rows = sheet.CreateRow(0);
+                rows.Height = 400;
+                rows.CreateCell(0).SetCellValue(reportName);   //报表名称
+                rows.GetCell(0).CellStyle = style;
+                sheet.AddMergedRegion(new CellRangeAddress(0, 0, 0, table.Columns.Count - 1));
+
+                rows = sheet.CreateRow(1);
+                for (int i = 0; i < table.Columns.Count; i++)
+                {
+                    rows.CreateCell(i).SetCellValue(table.Columns[i].ColumnName.ToString());
+                    rows.Sheet.SetColumnWidth(i, 4000);
+                    rows.GetCell(i).CellStyle = style;
+                }
+                CellStyle style2 = workBook.CreateCellStyle();
+                style2.Alignment = HorizontalAlignment.LEFT;
+                style2.VerticalAlignment = VerticalAlignment.CENTER;
+                style2.SetFont(font);
+                style2.DataFormat = HSSFDataFormat.GetBuiltinFormat("@");
+                //style2.WrapText = true;
+                for (int j = 1; j <= table.Rows.Count; j++)
+                {
+                    Row row = sheet.CreateRow(j + 1);
+                    for (int k = 0; k < table.Columns.Count; k++)
+                    {
+                        row.CreateCell(k).SetCellValue(table.Rows[j - 1][k].ToString());
+                        row.GetCell(k).CellStyle = style2;
+                    }
+                }
+
+                int maxColumn = table.Columns.Count;
+                //列宽自适应，只对英文和数字有效  
+                for (int i = 0; i <= maxColumn; i++)
+                {
+                    sheet.AutoSizeColumn(i);
+                }
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    workBook.Write(ms);
+                    ms.Flush();
+                    ms.Position = 0;
+                    workBook = null;
+                    HttpContext.Response.ContentType = "application/vnd.ms-excel";
+
+                    string browser = HttpContext.Request.Browser.Browser.ToString();
+                    string header = string.Empty;
+                    if (browser == "Firefox")
+                    {
+                        header = string.Format("attachment; filename={0}", string.Format("{0}-{1}.xls", reportName, DateTime.Now.ToString("yyyy-MM-dd")), Encoding.UTF8).ToString();
+                    }
+                    else
+                    {
+                        header = string.Format("attachment; filename={0}", HttpUtility.UrlEncode(string.Format("{0}-{1}.xls", reportName, DateTime.Now.ToString("yyyy-MM-dd")), Encoding.UTF8)).ToString();
+                    }
+                    HttpContext.Response.AddHeader("Content-Disposition", header);
+                    HttpContext.Response.Clear();
+                    HttpContext.Response.BinaryWrite(ms.GetBuffer());
+                    HttpContext.Response.End();
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        #endregion
+
+        #region 图片上传
+        /// <summary>
+        ///  上传图片
+        /// </summary>
+        /// <param name="filePath">当前图片路径</param>
+        /// <returns></returns>
+        public string UploadImage(string fromFilePath)
+        {
+            try
+            {
+                //如果没有修改图片或者是默认图片，则不用上传
+                if (fromFilePath.IndexOf("/UploadFolder/") > -1 || string.Compare(fromFilePath, "/Content/images/default.jpg", true) == 0)
+                {
+                    return fromFilePath;
+                }
+                string imgSrc = fromFilePath;
+                string exe = Path.GetExtension(imgSrc);
+                Image image = Image.FromFile(Server.MapPath(imgSrc));
+                Image cutedImage = new System.Drawing.Bitmap(120, 130);
+                Graphics g = Graphics.FromImage(cutedImage);
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                g.Clear(Color.White);
+                //g.DrawImage(image, new Rectangle(0, 0, cutedImage.Width, cutedImage.Height), new Rectangle(0, 0, 670, 670), System.Drawing.GraphicsUnit.Pixel);
+                g.DrawImage(image, new Rectangle(0, 0, cutedImage.Width, cutedImage.Height));
+                string dir = "/UploadFolder/Images/";
+                string fulldir = Server.MapPath(dir);
+                if (!Directory.Exists(fulldir))
+                {
+                    Directory.CreateDirectory(fulldir);
+                }
+                string saveOriPath = dir + Guid.NewGuid().ToString() + exe;
+                cutedImage.Save(Server.MapPath(saveOriPath));
+                cutedImage.Dispose();
+                g.Dispose();
+                return saveOriPath;
+            }
+            catch
+            {
+                return fromFilePath;
+            }
+        }
+        /// <summary>
+        ///  上传图片-不裁剪
+        /// </summary>
+        /// <param name="filePath">当前图片路径</param>
+        /// <returns></returns>
+        public string UploadImageNotCut(string fromFilePath)
+        {
+            try
+            {
+                //如果没有修改图片或者是默认图片，则不用上传
+                if (fromFilePath.IndexOf("/UploadFolder/") > -1 || string.Compare(fromFilePath, "/Content/images/default.jpg", true) == 0)
+                {
+                    return fromFilePath;
+                }
+                string imgSrc = fromFilePath;
+                string exe = Path.GetExtension(imgSrc);
+                Image image = Image.FromFile(Server.MapPath(imgSrc));
+                string dir = "/UploadFolder/Images/";
+                string fulldir = Server.MapPath(dir);
+                if (!Directory.Exists(fulldir))
+                {
+                    Directory.CreateDirectory(fulldir);
+                }
+                string saveOriPath = dir + Guid.NewGuid().ToString() + exe;
+                image.Save(Server.MapPath(saveOriPath));
+                image.Dispose();
+                return saveOriPath;
+            }
+            catch
+            {
+                return fromFilePath;
+            }
+        }
+        #endregion
+
+        #region 操作类
+        public static T_UserIdentity SysUserIdentity
+        {
+            get
+            {
+                if (System.Web.HttpContext.Current.Session["UserInfo"] != null)
+                {
+                    return (T_UserIdentity)System.Web.HttpContext.Current.Session["UserInfo"];
+                }
+                return null;
+            }
+            set
+            {
+                System.Web.HttpContext.Current.Session["UserInfo"] = value;
+            }
+        }
+        /// <summary>
+        /// wisdom 得到所有按钮
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public string GetButtons(FormCollection collection)
+        {
+            string controller = collection["controller"].ToLower();
+            string action = collection["action"].ToLower();
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{ items:[");
+            IEnumerable<V_UserPermission> up = SysUserIdentity.PermissionList.Where(o => o.Fun_Controller.ToLower() == controller && o.Fun_Action.ToLower() == action);
+            if (up.Where(o => o.Fun_Code == "1").Count() > 0)
+            {
+                sb.Append("{ text: '增加', click: toolbarBtnItemClick, icon: 'add' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "2").Count() > 0)
+            {
+                sb.Append("{ text: '修改', click: toolbarBtnItemClick, icon: 'modify' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "3").Count() > 0)
+            {
+                sb.Append("{ text: '删除', click: toolbarBtnItemClick, icon: 'delete' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "4").Count() > 0)
+            {
+                sb.Append("{ text: '申请', click: toolbarBtnItemClick, icon: 'outbox' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "5").Count() > 0)
+            {
+                sb.Append("{ text: '同意', click: toolbarBtnItemClick, icon: 'agree' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "6").Count() > 0)
+            {
+                sb.Append("{ text: '拒绝', click: toolbarBtnItemClick, icon: 'reject' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "7").Count() > 0)
+            {
+                sb.Append("{ text: '导出', click: toolbarBtnItemClick, icon: 'print' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "8").Count() > 0)
+            {
+                sb.Append("{ text: '导入', click: toolbarBtnItemClick, icon: 'database' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "9").Count() > 0)
+            {
+                sb.Append("{ text: '发卡', click: toolbarBtnItemClick, icon: 'issue' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "10").Count() > 0)
+            {
+                sb.Append("{ text: '设置', click: toolbarBtnItemClick, icon: 'set' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "11").Count() > 0)
+            {
+                sb.Append("{ text: '锁定', click: toolbarBtnItemClick, icon: 'lock' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "12").Count() > 0)
+            {
+                sb.Append("{ text: '下载模板', click: toolbarBtnItemClick, icon: 'download' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "13").Count() > 0)
+            {
+                sb.Append("{ text: '约考', click: toolbarBtnItemClick, icon: 'noticeexam' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "14").Count() > 0)
+            {
+                sb.Append("{ text: '人工安排', click: toolbarBtnItemClick, icon: 'peoplearrangement' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "15").Count() > 0)
+            {
+                sb.Append("{ text: '自动安排', click: toolbarBtnItemClick, icon: 'autoarrangement' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "16").Count() > 0)
+            {
+                sb.Append("{ text: '打印', click: toolbarBtnItemClick, icon: 'printAdmission' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "17").Count() > 0)
+            {
+                sb.Append("{ text: '验证', click: toolbarBtnItemClick, icon: 'Valid' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "18").Count() > 0)
+            {
+                sb.Append("{ text: '安排', click: toolbarBtnItemClick, icon: 'plan' },");
+                sb.Append("{ line: true },");
+            }
+            if (up.Where(o => o.Fun_Code == "19").Count() > 0)
+            {
+                sb.Append("{ text: '重置', click: toolbarBtnItemClick, icon: 'reset' },");
+                sb.Append("{ line: true },");
+            }
+            if (sb.ToString().LastIndexOf(",") > 0)
+            {
+                return Utils.ParseToJson(sb.ToString().Substring(0, sb.ToString().LastIndexOf(",")) + "]}");
+            }
+            else
+                return Utils.ParseToJson(sb.ToString() + "]}");
+        }
+        #endregion
+
+        /// <summary>
+        /// 写入日志
+        /// </summary>
+        /// <param name="modelName">模块名称</param>
+        /// <param name="logDetail">操作详情</param>
+        public void WriteLog(string modelName, string logDetail)
+        {
+            #region 插入日志
+            T_Sys_Log log = new T_Sys_Log();
+            log.Log_Type = 2;
+            log.Log_UserId = SysUserIdentity.User_Id;
+            log.Log_ModelName = modelName;
+            log.Log_Ip = Request.ServerVariables["REMOTE_ADDR"].ToString();
+            log.Log_Detail = logDetail;
+            log.Log_Date = DateTime.Now;
+            B_Sys_Log.Insert(log);
+            #endregion
+        }
+
+        /// <summary>
+        /// 获取培训机构列表
+        /// </summary>
+        /// <returns></returns>
+        public List<SchoolModel> GetSchoolList()
+        {
+            BLLSchool bllSchool = new BLLSchool();
+            List<SchoolModel> list = new List<SchoolModel>();
+            School where = new School();
+            where.Sch_State = (int)StateType.StateOk;
+            //判断是否是管理员
+            int User_Type = (int)SysUserIdentity.UserInfo.User_Type;
+            if (User_Type != 3)
+            {
+                where.Sch_IdList = SysUserIdentity.User_SchoolId;
+
+            }
+
+            DataSet ds = bllSchool.GetList(where).DS;
+            SchoolModel schoolModel;
+            foreach (DataRow dr in ds.Tables[0].Rows)
+            {
+                schoolModel = new SchoolModel();
+                schoolModel.Sch_ID = TypeConverter.ObjectToInt(dr["Sch_ID"]);
+                schoolModel.Sch_Name = dr["Sch_Name"].ToString();
+                list.Add(schoolModel);
+            }
+            return list;
+        }
+
+
+        /// <summary>
+        /// 获取培训机构列表
+        /// </summary>
+        /// <returns></returns>
+        public List<SchoolModel> GetSchoolList2()
+        {
+            BLLSchool bllSchool = new BLLSchool();
+            List<SchoolModel> list = new List<SchoolModel>();
+            School where = new School();
+            where.Sch_State = (int)StateType.StateOk;
+            //判断是否是管理员
+            int User_Type = (int)SysUserIdentity.UserInfo.User_Type;
+            if (User_Type != 3)
+            {
+                where.Sch_IdList = SysUserIdentity.User_SchoolId;
+
+            }
+
+            DataSet ds = bllSchool.GetList(where).DS;
+            SchoolModel schoolModel;
+            foreach (DataRow dr in ds.Tables[0].Rows)
+            {
+                schoolModel = new SchoolModel();
+                schoolModel.Sch_NO = dr["Sch_No"].ToString();
+                schoolModel.Sch_Name = dr["Sch_Name"].ToString();
+                list.Add(schoolModel);
+            }
+            return list;
+        }
+
+    }
+
+    //操作类 by jam add
+    public class T_UserIdentity
+    {
+        public T_Sys_User UserInfo { get; set; }
+        public int? User_Id { get; set; }
+        public string User_LastloginTime { get; set; }
+        public IList<V_UserPermission> PermissionList { get; set; }
+        public string User_SchoolId { get; set; }//管理的驾校id
+        public string User_SchoolNo { get; set; }//管理的驾校schoolNo
+        public List<string> Button { get; set; }
+    }
+
+
+
+}

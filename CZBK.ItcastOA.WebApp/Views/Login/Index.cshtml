@@ -1,0 +1,58 @@
+﻿@model UPSTAR.System.ViewModel.LoginViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title-登录</title>
+    <link href="~/Content/css/page/login.css" rel="stylesheet" type="text/css" />
+    <script src="~/Content/js/jquery/jquery-1.8.1.min.js"></script>
+    <script src="~/Content/js/core/knockout-2.2.1.js"></script>
+    <script src="~/Content/viewModel/loginViewModel.js"></script>
+</head>
+<body>
+    <div class="second_body">
+        <form data-bind="submit:loginClick">
+            <div class="logo">
+                <img src="/Content/images/login/logo.png" alt="" />
+            </div>
+            <div class="title-zh">@ViewBag.Title</div>
+            <div class="title-en">@ViewBag.SubTitle</div>
+            <div class="message" data-bind="html:message"></div>
+            @Html.AntiForgeryToken()
+            <table border="0" style="width: 300px;">
+                <tr>
+                    <td style="padding-bottom: 5px; width: 75px; text-align:right">@Html.LabelFor(m => m.UserName)：</td>
+                    <td colspan="2">
+                        <input type="text" class="login" data-bind="value:form.UserName" /></td>
+                </tr>
+                <tr>
+                    <td class="lable" style="vertical-align: middle;text-align:right">@Html.LabelFor(m => m.Password)：</td>
+                    <td colspan="2">
+                        <input type="password" class="login" data-bind="value:form.Password" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lable" style="vertical-align: middle;text-align:right">@Html.LabelFor(m => m.CheckCode)：</td>
+                    <td colspan="2">
+                        <input type="text" class="login" data-bind="value:form.CheckCode" style="width:100px"/>
+                        <img id="imgCode" title="看不清，点击换一张" data-bind="click:checkCodeClick"  src="@Url.Action("ShowValidateCode", "Login", new { t = @DateTime.Now.Ticks })" style="float: right; height: 26px;margin-top: 0px;margin-right: 13px;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+                        <input type="checkbox" data-bind="checked:form.RememberMe" /><span>系统记住我</span></td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align: center">
+                        <input type="submit" value="登录" class="login_button" />
+                        <input type="button" value="重置" class="reset_botton" data-bind="click:resetClick" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</body>
+</html>
