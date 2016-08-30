@@ -30,4 +30,6 @@ namespace UPSTAR.System.ViewModel
 
         public string City { get; set; }
     }
+
+
 }

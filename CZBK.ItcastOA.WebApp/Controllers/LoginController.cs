@@ -8,6 +8,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using UPSTAR.System.ViewModel;
+using UPSTAR.System.ModelMapper;
 
 namespace CZBK.ItcastOA.WebApp.Controllers
 {
@@ -42,11 +43,13 @@ namespace CZBK.ItcastOA.WebApp.Controllers
                     return Json(new { status = "no", message = "验证码错误" }, JsonRequestBehavior.DenyGet);
 
                 var md5Pwd = Encryption.GetMd5Hash(LoginModel.UserName + LoginModel.Password);
-                var model = UserInfoService.LoadEntities(u => u.UserName == LoginModel.UserName && u.Password == md5Pwd).FirstOrDefault();
-                if (model == null)
+                var userInfo = UserInfoService.LoadEntities(u => u.UserName == LoginModel.UserName && u.Password == md5Pwd).FirstOrDefault();
+                if (userInfo == null)
                 {
                     return Json(new { status = "no", message = "用户名或密码错误" }, JsonRequestBehavior.DenyGet);
                 }
+
+                var aaa = LoginModel.UserInfoMap();
 
                 var effectiveHours = SysConfig.GetConfigInt("LoginEffectiveHours");
                 WebFormsAuth.SignIn(LoginModel.UserName, LoginModel, LoginModel.RememberMe, 60 * effectiveHours);

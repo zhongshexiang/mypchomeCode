@@ -3186,6 +3186,10 @@
       <Project>{752bb203-433a-4237-9865-62218a501afa}</Project>
       <Name>CZBK.ItcastOA.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\UPSTAR.System.ModelMapper\UPSTAR.System.ModelMapper.csproj">
+      <Project>{7d458575-022d-452e-b07f-ecf8bc53820f}</Project>
+      <Name>UPSTAR.System.ModelMapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UPSTAR.System.ViewModel\UPSTAR.System.ViewModel.csproj">
       <Project>{e9159ac9-d7bb-40ef-803f-da0647597239}</Project>
       <Name>UPSTAR.System.ViewModel</Name>

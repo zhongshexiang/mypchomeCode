@@ -13,24 +13,25 @@ namespace CZBK.ItcastOA.WebApp.Controllers
 {
     public class BaseController : Controller
     {
-        protected override void Initialize(RequestContext requestContext)
-        {
-            base.Initialize(requestContext);
-            //不需要验证登录的Action
-            List<string> notCheckLoginActions = new List<string> { "GetCheckCode", "EducationRegformDetail", "EducationCertificateDetail" };
-            if (!notCheckLoginActions.Contains(RouteData.Values["action"].ToString()))// && SysUserIdentity == null)
-            {
-                Response.Redirect("Login/Index");  
-            }
-        }
+        protected IBLL.IUserInfoService UserInfoService { get; set; }
+        //protected override void Initialize(RequestContext requestContext)
+        //{
+        //    base.Initialize(requestContext);
+        //    //不需要验证登录的Action
+        //    List<string> notCheckLoginActions = new List<string> { "GetCheckCode", "EducationRegformDetail", "EducationCertificateDetail" };
+        //    if (!notCheckLoginActions.Contains(RouteData.Values["action"].ToString()))// && SysUserIdentity == null)
+        //    {
+        //        Response.Redirect("Login/Index");  
+        //    }
+        //}
 
        // public UserInfo LoginUser { get; set; }
         /// <summary>
         /// 执行控制器中的方法之前先执行该方法。
         /// </summary>
         /// <param name="filterContext"></param>
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
-        {
+        //protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        //{
             //base.OnActionExecuting(filterContext);
             ////if (Session["userInfo"] == null)
             //bool isSucess = false;
@@ -109,6 +110,6 @@ namespace CZBK.ItcastOA.WebApp.Controllers
             //{
             //    filterContext.Result = Redirect("/Login/Index");//注意.
             //}
-        }
+      //  }
     }
 }

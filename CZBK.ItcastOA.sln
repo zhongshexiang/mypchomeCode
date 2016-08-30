@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZBK.ItcastOA.WebFormApp", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UPSTAR.System.ViewModel", "UPSTAR.System.ViewModel\UPSTAR.System.ViewModel.csproj", "{E9159AC9-D7BB-40EF-803F-DA0647597239}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UPSTAR.System.ModelMapper", "UPSTAR.System.ModelMapper\UPSTAR.System.ModelMapper.csproj", "{7D458575-022D-452E-B07F-ECF8BC53820F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +98,10 @@ Global
 		{E9159AC9-D7BB-40EF-803F-DA0647597239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9159AC9-D7BB-40EF-803F-DA0647597239}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9159AC9-D7BB-40EF-803F-DA0647597239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D458575-022D-452E-B07F-ECF8BC53820F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D458575-022D-452E-B07F-ECF8BC53820F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D458575-022D-452E-B07F-ECF8BC53820F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D458575-022D-452E-B07F-ECF8BC53820F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

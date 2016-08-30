@@ -8,9 +8,9 @@ using UPSTAR.System.ViewModel;
 
 namespace CZBK.ItcastOA.WebApp.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
-        IBLL.IUserInfoService UserInfoService { get; set; }
+        
         public ActionResult Index()
         {
             var loginer = WebFormsAuth.GetUserData<LoginViewModel>();
