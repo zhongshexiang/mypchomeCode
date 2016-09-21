@@ -18,10 +18,10 @@ namespace CZBK.ItcastOA.WebApp
         {
             base.OnException(filterContext);
             Exception ex = filterContext.Exception;
-            //写到队列
+            //写到错误处理队列
             ExecptionQueue.Enqueue(ex);
-            //跳转到错误页面.
-            filterContext.HttpContext.Response.Redirect("/Error.html");
+            //指定跳转到错误页面.如果不加，默认调整至Shared下的error.cshtml
+            //filterContext.HttpContext.Response.Redirect("Error.html");
         }
     }
 }

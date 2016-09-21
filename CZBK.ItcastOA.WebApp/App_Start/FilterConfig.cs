@@ -8,6 +8,7 @@ namespace CZBK.ItcastOA.WebApp
     {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
+            //自定义错误处理
             filters.Add(new MvcHandleErrorAttribute());
             filters.Add(new MvcActionFilterAttribute());
             //禁止匿名访问
