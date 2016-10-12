@@ -19,6 +19,7 @@ namespace CZBK.ItcastOA.WebApp.Controllers
             return View();
         }
 
+        [HttpPost]
         [ValidateJsonAntiForgeryToken]
         public JsonResult changePWAction(changePWViewModel Model)
         {
