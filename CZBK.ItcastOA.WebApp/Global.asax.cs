@@ -34,6 +34,12 @@ namespace CZBK.ItcastOA.WebApp
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
+            //删除webform视图引擎
+            var viewEngines = System.Web.Mvc.ViewEngines.Engines;
+            var webFormsEngine = viewEngines.OfType<WebFormViewEngine>().FirstOrDefault();
+            if (webFormsEngine != null)
+                viewEngines.Remove(webFormsEngine);
+
             DataAnnotationsModelValidatorProvider.RegisterAdapterFactory(typeof(System.ComponentModel.DataAnnotations.RequiredAttribute),
                 (m, c, a) => new MyRequiredAttributeAdapter(m, c, (System.ComponentModel.DataAnnotations.RequiredAttribute)a));
 
